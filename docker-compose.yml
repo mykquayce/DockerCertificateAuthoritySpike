@@ -2,6 +2,23 @@ version: '3.7'
 
 services:
 
+  api:
+    image: eassbhhtgu/api:latest
+    depends_on:
+    - weatherforecast
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTPS_PORT: '443'
+      ASPNETCORE_URLS: https://+
+      Endpoints:WeatherForecast: https://weatherforecast
+      Kestrel:Certificates:Default:KeyPath: /run/secrets/api.key
+      Kestrel:Certificates:Default:Path: /run/secrets/api.crt
+    ports:
+    - 50927:443/tcp
+    secrets:
+    - source: api.crt
+    - source: api.key
+
   weatherforecast:
     image: eassbhhtgu/weatherforecast:latest
     environment:
@@ -17,6 +34,12 @@ services:
     - source: weatherforecast.key
 
 secrets:
+  api.crt:
+    external: true
+    name: api.crt
+  api.key:
+    external: true
+    name: api.key
   weatherforecast.crt:
     external: true
     name: weatherforecast.crt
