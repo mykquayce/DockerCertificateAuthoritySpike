@@ -6,18 +6,20 @@ services:
     image: eassbhhtgu/api:latest
     depends_on:
     - weatherforecast
+    entrypoint: bash -c '/usr/sbin/update-ca-certificates && dotnet Api.WebApplication.dll'
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTPS_PORT: '443'
       ASPNETCORE_URLS: https://+
       Endpoints:WeatherForecast: https://weatherforecast
-      Kestrel:Certificates:Default:KeyPath: /run/secrets/api.key
-      Kestrel:Certificates:Default:Path: /run/secrets/api.crt
+      Kestrel:Certificates:Default:KeyPath: /usr/localhost.key
+      Kestrel:Certificates:Default:Path: /usr/localhost.crt
     ports:
     - 50927:443/tcp
-    secrets:
-    - source: api.crt
-    - source: api.key
+    volumes:
+    - ~/.aspnet/https/ca.crt:/usr/local/share/ca-certificates/ca.crt:ro
+    - ~/.aspnet/https/api.crt:/usr/localhost.crt:ro
+    - ~/.aspnet/https/api.key:/usr/localhost.key:ro
 
   weatherforecast:
     image: eassbhhtgu/weatherforecast:latest
@@ -25,24 +27,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTPS_PORT: '443'
       ASPNETCORE_URLS: https://+
-      Kestrel:Certificates:Default:KeyPath: /run/secrets/weatherforecast.key
-      Kestrel:Certificates:Default:Path: /run/secrets/weatherforecast.crt
-    ports:
-    - 50928:443/tcp
-    secrets:
-    - source: weatherforecast.crt
-    - source: weatherforecast.key
-
-secrets:
-  api.crt:
-    external: true
-    name: api.crt
-  api.key:
-    external: true
-    name: api.key
-  weatherforecast.crt:
-    external: true
-    name: weatherforecast.crt
-  weatherforecast.key:
-    external: true
-    name: weatherforecast.key
+      Kestrel:Certificates:Default:KeyPath: /usr/localhost.key
+      Kestrel:Certificates:Default:Path: /usr/localhost.crt
+    volumes:
+    - ~/.aspnet/https/weatherforecast.crt:/usr/localhost.crt:ro
+    - ~/.aspnet/https/weatherforecast.key:/usr/localhost.key:ro
